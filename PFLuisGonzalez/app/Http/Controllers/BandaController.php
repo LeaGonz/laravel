@@ -6,7 +6,8 @@ use App\Models\Musicband;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use Storage;
+use Illuminate\Support\Facades\Storage;
+// use Storage;
 
 class BandaController extends Controller
 {
@@ -25,10 +26,10 @@ class BandaController extends Controller
     public function bandsGetFromDB()
     {
         $bands = Musicband::leftJoin('albumsband', 'musicbands.id', '=', 'albumsband.band_id')
-            ->select('musicbands.*', DB::raw('count(albumsband.id) as albums_count'))
-            ->groupBy('musicbands.id')
+            ->select('musicbands.*', DB::raw('COUNT(albumsband.id) as albums_count'))
+            ->groupBy('musicbands.id', 'musicbands.name', 'musicbands.photo', 'musicbands.created_at', 'musicbands.updated_at')
             ->get();
-            // dd($bands);
+        // dd($bands);
         return $bands;
     }
 
@@ -36,6 +37,7 @@ class BandaController extends Controller
     {
         return view('bands.bandAdd');
     }
+
     /**
      * Função para adicionar ou atualizar uma banda na base de dados
      */
@@ -49,6 +51,7 @@ class BandaController extends Controller
             ]);
 
             $photo = null;
+
             if ($request->hasFile('photo')) {
                 $photo = Storage::putFile('bandPhotos', $request->photo);
             }
@@ -70,6 +73,7 @@ class BandaController extends Controller
             ]);
 
             $photo = null;
+
             if ($request->hasFile('photo')) {
                 $photo = Storage::putFile('bandPhotos', $request->photo);
             }
@@ -80,11 +84,11 @@ class BandaController extends Controller
             ]);
             return redirect()->route('home')->with('message', 'Banda adicionada com sucesso!');
         }
-
     }
 
-    public function bandView($id){
-        $band = Musicband::find($id);
+    public function bandView($id)
+    {
+        $band = Musicband::where('id', $id)->first();
         return view('bands.bandView', compact('band'));
     }
 }
